@@ -10,20 +10,29 @@ const api = require('./endpoints/api');
 
 const app = express();
 
+// const pool = sql.createPool({
+//     connectionLimit: 1000000,
+//     host: '127.0.0.1',
+//     user: 'root',
+//     password: '',
+//     multipleStatements: true
+// });
+
 const pool = sql.createPool({
-    connectionLimit: 1000000,
-    host: '127.0.0.1',
-    user: 'root',
-    password: '',
-    multipleStatements: true
-});
+        connectionLimit: 1000000,
+        host: '23.94.16.6',
+        user: 'anniekuk_db',
+        password: 'Allforanniekuku007$',
+        database: 'anniekuk_anniekuku',
+        multipleStatements: true
+    });
 
 
 pool.getConnection(function (err, connection) {
 
     if (err) throw err;
 
-    connection.query('use anniekuku');
+    connection.query('use anniekuk_anniekuku');
 
     setInterval(() => {
         connection.query('SELECT 1', function (err, res) {

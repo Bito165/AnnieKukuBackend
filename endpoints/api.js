@@ -13,11 +13,20 @@ const upload = multer({storage: storage});
 app.use('./upload/*', express.static(path.join('./upload/*')));
 
 
+// const pool = sql.createPool({
+//     connectionLimit: 1000000,
+//     host: '127.0.0.1',
+//     user: 'root',
+//     password: '',
+//     multipleStatements: true
+// });
+
 const pool = sql.createPool({
     connectionLimit: 1000000,
-    host: '127.0.0.1',
-    user: 'root',
-    password: '',
+    host: '23.94.16.6',
+    user: 'anniekuk_db',
+    password: 'Allforanniekuku007$',
+    database: 'anniekuk_anniekuku',
     multipleStatements: true
 });
 
