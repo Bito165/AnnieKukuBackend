@@ -10,7 +10,7 @@ const storage = multer.memoryStorage()
 //define the type of upload multer would be doing and pass in its destination, in our case, its a single file with the name photo
 const upload = multer({storage: storage});
 
-app.use('./upload/*', express.static(path.join('./upload/*')));
+
 
 
 // const pool = sql.createPool({
@@ -32,12 +32,14 @@ const pool = sql.createPool({
 
 
 pool.getConnection(function (err, connection) {
-    if (err) throw err;
+    if (err){
+        console.log({err})
+
+    }else{
 
     connection.query('use anniekuku');
 
-
-    /* GET api listing. */
+        /* GET api listing. */
     router.get('/', (req, res) => {
         //console.log(res.send);
         const bito = {'api': 'izz working'}
@@ -998,6 +1000,8 @@ pool.getConnection(function (err, connection) {
         })
     })
 
+    }
+    
 })
 
 module.exports = router;

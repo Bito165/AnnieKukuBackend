@@ -30,7 +30,9 @@ const pool = sql.createPool({
 
 pool.getConnection(function (err, connection) {
 
-    if (err) throw err;
+    if (err){
+        console.log({err})
+    }else{
 
     connection.query('use anniekuk_anniekuku');
 
@@ -100,6 +102,7 @@ pool.getConnection(function (err, connection) {
         if (err) throw err;
     });
 
+}
 
 })
 
