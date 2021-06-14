@@ -15,26 +15,26 @@ const app = express();
 //     host: '127.0.0.1',
 //     user: 'root',
 //     password: '',
+//     database: 'anniekuku',
 //     multipleStatements: true
 // });
 
 const pool = sql.createPool({
-        connectionLimit: 1000000,
-        host: '23.94.16.6',
-        user: 'anniekuk_db',
-        password: 'Allforanniekuku007$',
-        database: 'anniekuk_anniekuku',
-        multipleStatements: true
-    });
+    connectionLimit: 1000000,
+    host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+    port: '3306',
+    user: 'cq7bslzg89bzf3rl',
+    password: 'v1kjmgf770pbvt4s',
+    database: 'wn9v9fnyzffqn302',
+    multipleStatements: true
+});
 
 
-pool.getConnection(function (err, connection) {
+pool.getConnection((err, connection) => {
 
     if (err){
         console.log({err})
     }else{
-
-    connection.query('use anniekuk_anniekuku');
 
     setInterval(() => {
         connection.query('SELECT 1', function (err, res) {

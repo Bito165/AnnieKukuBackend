@@ -10,23 +10,22 @@ const storage = multer.memoryStorage()
 //define the type of upload multer would be doing and pass in its destination, in our case, its a single file with the name photo
 const upload = multer({storage: storage});
 
-
-
-
 // const pool = sql.createPool({
 //     connectionLimit: 1000000,
 //     host: '127.0.0.1',
 //     user: 'root',
 //     password: '',
+//     database: 'anniekuku',
 //     multipleStatements: true
 // });
 
 const pool = sql.createPool({
     connectionLimit: 1000000,
-    host: '23.94.16.6',
-    user: 'anniekuk_db',
-    password: 'Allforanniekuku007$',
-    database: 'anniekuk_anniekuku',
+    host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+    port: '3306',
+    user: 'cq7bslzg89bzf3rl',
+    password: 'v1kjmgf770pbvt4s',
+    database: 'wn9v9fnyzffqn302',
     multipleStatements: true
 });
 
@@ -36,8 +35,6 @@ pool.getConnection(function (err, connection) {
         console.log({err})
 
     }else{
-
-    connection.query('use anniekuku');
 
         /* GET api listing. */
     router.get('/', (req, res) => {
@@ -830,7 +827,7 @@ pool.getConnection(function (err, connection) {
 
     router.post('/merch/create-new', upload.array('images', 3), (req, res, err) => {
 
-        //console.log(req.files[0]);
+        console.log(req.files);
 
         const time = new Date();
         const query = "INSERT INTO products (item_name, item_avatar, item_avatar2, item_avatar3, item_quantity, item_price, item_category, item_description ,quantity_sold ,createdby, createddate) values (?,?,?,?,?,?,?,?,?,?,?) ";
@@ -954,7 +951,7 @@ pool.getConnection(function (err, connection) {
             } else {
                 //console.log(req.body)
                 const time = new Date();
-                connection.query("INSERT INTO expensesources(source, createdby, description, createddate) values (?, ?, ?)", [req.body.source, req.body.username, time], (err, result) => {
+                connection.query("INSERT INTO expensesources(source, createdby, createddate) values (?, ?, ?)", [req.body.source, req.body.username, time], (err, result) => {
                     if(err){
                         res.send(err)
                     }else{
