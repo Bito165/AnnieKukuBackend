@@ -10,35 +10,35 @@ const storage = multer.memoryStorage()
 //define the type of upload multer would be doing and pass in its destination, in our case, its a single file with the name photo
 const upload = multer({storage: storage});
 
-// const pool = sql.createPool({
-//     connectionLimit: 1000000,
-//     host: '127.0.0.1',
-//     user: 'root',
-//     password: '',
-//     database: 'anniekuku',
-//     multipleStatements: true
-// });
-
 const pool = sql.createPool({
     connectionLimit: 1000000,
-    host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
-    port: '3306',
-    user: 'cq7bslzg89bzf3rl',
-    password: 'v1kjmgf770pbvt4s',
-    database: 'wn9v9fnyzffqn302',
+    host: '127.0.0.1',
+    user: 'root',
+    password: '',
+    database: 'anniekuku',
     multipleStatements: true
 });
+
+// const pool = sql.createPool({
+//     connectionLimit: 1000000,
+//     host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+//     port: '3306',
+//     user: 'cq7bslzg89bzf3rl',
+//     password: 'v1kjmgf770pbvt4s',
+//     database: 'wn9v9fnyzffqn302',
+//     multipleStatements: true
+// });
 
 
 pool.getConnection(function (err, connection) {
     if (err){
-        console.log({err})
+        // console.log({err})
 
     }else{
 
         /* GET api listing. */
     router.get('/', (req, res) => {
-        //console.log(res.send);
+        //// console.log(res.send);
         const bito = {'api': 'izz working'}
         res.send(bito);
     });
@@ -47,7 +47,7 @@ pool.getConnection(function (err, connection) {
         const query = "Select * from orders where status = 0; Select * from messages where subject = 1 and status = 0 ; Select * from products where item_quantity > 0; Select * from expensesources; Select * from revenuesources";
         connection.query(query, function (err, result) {
             if (err) {
-                //console.log(err);
+                //// console.log(err);
                 res.send(err);
             } else {
                 res.send(result);
@@ -321,8 +321,8 @@ pool.getConnection(function (err, connection) {
     });
 
     router.get('/home', (req, res) => {
-        const query = "SELECT * from carousel; SELECT * from products order by quantity_sold desc LIMIT 5;"
-        connection.query(query, function (err, result) {
+        const query = "SELECT * from carousel; SELECT * from products order by quantity_sold desc LIMIT 6; SELECT * from products order by createddate desc LIMIT 6; SELECT * from products where old_price > item_price order by quantity_sold desc LIMIT 6"
+        connection.query(query, (err, result) => {
             if (err) {
                 res.send(err);
             } else {
@@ -401,7 +401,7 @@ pool.getConnection(function (err, connection) {
         const query = "Select * from users where username = ?"
         connection.query(query, [req.body.username], function (err, result) {
             if (err) {
-                //console.log(err)
+                //// console.log(err)
                 res.send(err);
             } else {
                 if (result.length === 0) {
@@ -454,7 +454,7 @@ pool.getConnection(function (err, connection) {
         const query = "INSERT INTO revenue (amount, source, staff , week_day, month, year, createdby, createddate) values (?,?,?,?,?,?,?,?)";
         connection.query(query, [req.body.amount, req.body.source,  req.body.staff,  req.body.week_day, req.body.month,req.body.year, req.body.createdby, createddate], function (err, result) {
             if (err) {
-                console.log({err});
+                // console.log({err});
                 res.send(err);
             } else {
                 const message = {
@@ -502,13 +502,13 @@ pool.getConnection(function (err, connection) {
     router.post('/checkAvailability', (req, res) => {
 
         const check = 'SELECT * from products where item_name=? and id=?';
-        //console.log(req.body);
+        //// console.log(req.body);
         connection.query(check, [req.body.item_ordered, req.body.id], (err, result) => {
             if (err) {
                 res.send(err);
             } else {
 
-                //console.log(result);
+                //// console.log(result);
 
                 if (result.length > 0) {
                     if (result[0]['item_quantity'] >= req.body.item_quantity) {
@@ -553,7 +553,7 @@ pool.getConnection(function (err, connection) {
             hex += '' + string.charCodeAt(i).toString(16);
             code = hex;
             if (i === string.length - 1) {
-                //console.log(hex);
+                //// console.log(hex);
                 const query = "INSERT INTO orders (order_id, number_of_items, delivery_fee, amount, client_name, date_due, status, delivery_address, client_phone_number , transaction_ref, createddate) values (?,?,?,?,?,?,?,?,?,?,?)";
                 connection.query(query, [hex ,req.body.number_of_items, req.body.delivery_fee ,req.body.amount ,req.body.customer_name, req.body.date_due, req.body.status , req.body.delivery_address , req.body.client_phone_number , req.body.transaction_ref , createddate], (err, order) => {
                     if (err) {
@@ -564,7 +564,7 @@ pool.getConnection(function (err, connection) {
                             const orderdetail = "INSERT INTO orderdetails(order_id, item_ordered, item_quantity, item_price, createddate) values (?, ?, ?, ?, ?)"
                             connection.query(orderdetail, [ hex , element.item_ordered , element.item_quantity ,element.item_price, createddate], (err, result) => {
                                 if (err) {
-                                    //console.log(err)
+                                    //// console.log(err)
                                 } else {
 
                                     if (element.id === "gift-001") {
@@ -596,20 +596,20 @@ pool.getConnection(function (err, connection) {
                         const revenueEntry = "INSERT INTO revenue (amount, source, staff, description,week_day, month, year, createdby, createddate) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         connection.query(revenueEntry, [rev, req.body.source,  'WEB', ' Revenue Entry for Order '  + hex , req.body.week_day, req.body.month, req.body.year, 'WEB', createddate], (err, result) => {
                             if(err){
-                                console.log({err})
+                                // console.log({err})
                             }else{
-                                console.log(result);
+                                // console.log(result);
                             }
                         });
                         const customerCheck = 'Select * from customers where customer_phone_number = ? and customer_email = ?';
                         connection.query(customerCheck, [req.body.client_phone_number, req.body.customer_email], (err, result) => {
                             if (err) {
-                                console.log(err)
+                                // console.log(err)
                             } else if (result.length === 0) {
                                 const customer = "INSERT INTO customers (customer_name, customer_email, customer_phone_number, source, number_of_orders) values ('" + req.body.customer_name + "', '" + req.body.customer_email + "', '" + req.body.client_phone_number + "', '" + req.body.source + "', ?)";
                                 connection.query(customer, [1], (err, result) => {
-                                    console.log({err})
-                                    console.log({result})
+                                    // console.log({err})
+                                    // console.log({result})
                                 });
                             } else {
                                 const noo = result[0].number_of_orders + 1;
@@ -672,7 +672,7 @@ pool.getConnection(function (err, connection) {
             if (err) {
                 res.send(err);
             } else {
-                //console.log(result);
+                //// console.log(result);
                 const message = {"message": "Success"};
                 res.send(message);
 
@@ -681,7 +681,7 @@ pool.getConnection(function (err, connection) {
     })
 
     router.post('/user/create-new', (req, res) => {
-        //console.log(req.body);
+        //// console.log(req.body);
         req.body.createddate = new Date(req.body.createddate).getTime();
         const query = "INSERT INTO users (username, full_name, title, password, user_type, createdby) values ('" + req.body.username + "', '" + req.body.full_name + "', '" + req.body.title + "', '" + req.body.password + "', '" + req.body.usertype + "', '" + req.body.createdby + "') ";
         connection.query(query, function (err, result) {
@@ -780,7 +780,7 @@ pool.getConnection(function (err, connection) {
     });
 
     router.post('/merch/restock', (req, res) => {
-        //console.log(req.body)
+        //// console.log(req.body)
         const update = "UPDATE products set item_quantity=? where id=?";
         connection.query(update, [req.body.item_quantity, req.body.id], function (err, result) {
             if (err) {
@@ -827,11 +827,11 @@ pool.getConnection(function (err, connection) {
 
     router.post('/merch/create-new', upload.array('images', 3), (req, res, err) => {
 
-        console.log(req.files);
+        // console.log(req.files);
 
         const time = new Date();
-        const query = "INSERT INTO products (item_name, item_avatar, item_avatar2, item_avatar3, item_quantity, item_price, item_category, item_description ,quantity_sold ,createdby, createddate) values (?,?,?,?,?,?,?,?,?,?,?) ";
-        connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , req.files[1].buffer.toString('base64') , req.files[2].buffer.toString('base64') ,  req.body.item_quantity ,  req.body.item_price ,  req.body.item_category ,  req.body.item_description , '0' ,  req.body.createdby ,  time ],  (err, result) => {
+        const query = "INSERT INTO products (item_name, item_avatar, item_avatar2, item_avatar3, item_quantity, old_price, item_price, item_category, item_description ,quantity_sold ,createdby, createddate) values (?,?,?,?,?,?,?,?,?,?,?) ";
+        connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , req.files[1].buffer.toString('base64') , req.files[2].buffer.toString('base64') ,  req.body.item_quantity , 0,  req.body.item_price ,  req.body.item_category ,  req.body.item_description , '0' ,  req.body.createdby ,  time ],  (err, result) => {
             if (err) {
                 res.send(err);
             } else {
@@ -847,15 +847,39 @@ pool.getConnection(function (err, connection) {
 
     router.post('/merch/edit', upload.array('images', 3), (req, res, err) => {
         const time = new Date();
-        const query = "Update products set item_name = ?, item_price = ?, item_category = ?, item_description = ?, item_avatar = ? , item_avatar2 = ?, item_avatar3 = ? where id = ?";
-        connection.query(query, [req.body.item_name, req.body.item_price, req.body.item_category, req.body.item_description, req.files[0].buffer.toString('base64'), req.files[1].buffer.toString('base64'), req.files[2].buffer.toString('base64'), req.body.item_id], function (err, result) {
-            if (err) {
-                res.send(err);
-            } else {
-                const message = {
-                    "message": "Success"
-                };
-                res.send(message);
+        connection.query('Select item_price from products where id=?', [req.body.item_id], (err, result) => {
+            if(err){
+                res.send(err)
+            }else{
+                let old_price = 0
+                if(result[0].item_price !== req.body.item_price){ old_price = result[0].item_price }
+                if(req.files.length > 3){
+                    const update_query = "Update products set item_name = ?, old_price = ? item_price = ?, item_category = ?, item_description = ?, item_avatar = ? , item_avatar2 = ?, item_avatar3 = ? where id = ?";
+                    connection.query(update_query, [req.body.item_name, old_price, req.body.item_price, req.body.item_category, req.body.item_description, req.files[0].buffer.toString('base64'), req.files[1].buffer.toString('base64'), req.files[2].buffer.toString('base64'), req.body.item_id], (err, result) => {
+                        if (err) {
+                            res.send(err);
+                        } else {
+                            const message = {
+                                "message": "Success"
+                            };
+                            res.send(message);
+
+                        }
+                    })
+                }else{
+                    const update_query = "Update products set item_name = ?, old_price = ?, item_price = ?, item_category = ?, item_description = ? where id = ?";
+                    connection.query(update_query, [req.body.item_name, old_price, req.body.item_price, req.body.item_category, req.body.item_description, req.body.item_id], (err, result) => {
+                        if (err) {
+                            res.send(err);
+                        } else {
+                            const message = {
+                                "message": "Success"
+                            };
+                            res.send(message);
+
+                        }
+                    })
+                }
 
             }
         })
@@ -863,7 +887,7 @@ pool.getConnection(function (err, connection) {
     })
 
     router.post('/carousel/create-new', upload.array('image', 1), (req, res, err) => {
-        //console.log(req.files)
+        //// console.log(req.files)
         const time = new Date();
         const query = "INSERT INTO carousel (image, main_caption, min_caption, createdby, createddate) values ( 'uploads/" + req.files[0].filename + "', '" + req.body.main_caption + "', '" + req.body.min_caption + "', '" + req.body.createdby + "', '" + time + "') ";
         connection.query(query, function (err, result) {
@@ -949,7 +973,7 @@ pool.getConnection(function (err, connection) {
                 res.send(message);
 
             } else {
-                //console.log(req.body)
+                //// console.log(req.body)
                 const time = new Date();
                 connection.query("INSERT INTO expensesources(source, createdby, createddate) values (?, ?, ?)", [req.body.source, req.body.username, time], (err, result) => {
                     if(err){
