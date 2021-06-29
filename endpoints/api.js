@@ -10,24 +10,24 @@ const storage = multer.memoryStorage()
 //define the type of upload multer would be doing and pass in its destination, in our case, its a single file with the name photo
 const upload = multer({storage: storage});
 
-const pool = sql.createPool({
-    connectionLimit: 1000000,
-    host: '127.0.0.1',
-    user: 'root',
-    password: '',
-    database: 'anniekuku',
-    multipleStatements: true
-});
-
 // const pool = sql.createPool({
 //     connectionLimit: 1000000,
-//     host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
-//     port: '3306',
-//     user: 'cq7bslzg89bzf3rl',
-//     password: 'v1kjmgf770pbvt4s',
-//     database: 'wn9v9fnyzffqn302',
+//     host: '127.0.0.1',
+//     user: 'root',
+//     password: '',
+//     database: 'anniekuku',
 //     multipleStatements: true
 // });
+
+const pool = sql.createPool({
+    connectionLimit: 1000000,
+    host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+    port: '3306',
+    user: 'cq7bslzg89bzf3rl',
+    password: 'v1kjmgf770pbvt4s',
+    database: 'wn9v9fnyzffqn302',
+    multipleStatements: true
+});
 
 
 pool.getConnection(function (err, connection) {
@@ -889,8 +889,8 @@ pool.getConnection(function (err, connection) {
     router.post('/carousel/create-new', upload.array('image', 1), (req, res, err) => {
         //// console.log(req.files)
         const time = new Date();
-        const query = "INSERT INTO carousel (image, main_caption, min_caption, createdby, createddate) values ( 'uploads/" + req.files[0].filename + "', '" + req.body.main_caption + "', '" + req.body.min_caption + "', '" + req.body.createdby + "', '" + time + "') ";
-        connection.query(query, function (err, result) {
+        const query = "INSERT INTO carousel (image, main_caption, min_caption, createdby, createddate) values (?,?,?,?,?) ";
+        connection.query(query, [ req.files[0].buffer.toString('base64'), req.body.main_caption, req.body.min_caption, req.body.createdby, time]  ,(err, result) => {
             if (err) {
                 res.send(err);
             } else {

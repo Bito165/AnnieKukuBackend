@@ -10,24 +10,24 @@ const api = require('./endpoints/api');
 
 const app = express();
 
-const pool = sql.createPool({
-    connectionLimit: 1000000,
-    host: '127.0.0.1',
-    user: 'root',
-    password: '',
-    database: 'anniekuku',
-    multipleStatements: true
-});
-
 // const pool = sql.createPool({
 //     connectionLimit: 1000000,
-//     host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
-//     port: '3306',
-//     user: 'cq7bslzg89bzf3rl',
-//     password: 'v1kjmgf770pbvt4s',
-//     database: 'wn9v9fnyzffqn302',
+//     host: '127.0.0.1',
+//     user: 'root',
+//     password: '',
+//     database: 'anniekuku',
 //     multipleStatements: true
 // });
+
+const pool = sql.createPool({
+    connectionLimit: 1000000,
+    host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+    port: '3306',
+    user: 'cq7bslzg89bzf3rl',
+    password: 'v1kjmgf770pbvt4s',
+    database: 'wn9v9fnyzffqn302',
+    multipleStatements: true
+});
 
 
 pool.getConnection((err, connection) => {
@@ -43,7 +43,6 @@ pool.getConnection((err, connection) => {
             }
         });
     }, 1000);
-
 
     connection.query('CREATE TABLE IF NOT EXISTS products (id INT AUTO_INCREMENT PRIMARY KEY, item_name VARCHAR(255), item_avatar LONGTEXT,item_avatar2 LONGTEXT, item_avatar3 LONGTEXT, old_price INT, item_price INT, item_category VARCHAR(255), item_quantity VARCHAR(255), quantity_sold VARCHAR(255),  item_description VARCHAR(255), createdby VARCHAR(255), createddate DATE)', function (err, result) {
         if (err) throw err;
@@ -94,7 +93,7 @@ pool.getConnection((err, connection) => {
         if (err) throw err;
     });
 
-    connection.query('CREATE TABLE IF NOT EXISTS carousel (id INT AUTO_INCREMENT PRIMARY KEY, image VARCHAR(255), main_caption VARCHAR(255), min_caption VARCHAR(255), createdby VARCHAR(255), createddate DATE)', function (err, result) {
+    connection.query('CREATE TABLE IF NOT EXISTS carousel (id INT AUTO_INCREMENT PRIMARY KEY, image LONGTEXT, main_caption VARCHAR(255), min_caption VARCHAR(255), createdby VARCHAR(255), createddate DATE)', function (err, result) {
         if (err) throw err;
     });
 
