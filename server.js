@@ -18,7 +18,7 @@ const app = express();
 //     database: 'anniekuku',
 //     multipleStatements: true
 // });
-//
+
 const pool = sql.createPool({
     connectionLimit: 1000000,
     host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
