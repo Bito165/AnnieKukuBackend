@@ -830,7 +830,7 @@ pool.getConnection(function (err, connection) {
         // console.log(req.files);
 
         const time = new Date();
-        const query = "INSERT INTO products (item_name, item_avatar, item_avatar2, item_avatar3, item_quantity, old_price, item_price, item_category, item_description ,quantity_sold ,createdby, createddate) values (?,?,?,?,?,?,?,?,?,?,?) ";
+        const query = "INSERT INTO products (item_name, item_avatar, item_avatar2, item_avatar3, item_quantity, old_price, item_price, item_category, item_description ,quantity_sold ,createdby, createddate) values (?,?,?,?,?,?,?,?,?,?,?,?) ";
         connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , req.files[1].buffer.toString('base64') , req.files[2].buffer.toString('base64') ,  req.body.item_quantity , 0,  req.body.item_price ,  req.body.item_category ,  req.body.item_description , '0' ,  req.body.createdby ,  time ],  (err, result) => {
             if (err) {
                 res.send(err);
