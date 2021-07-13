@@ -3,12 +3,18 @@ const app = express();
 const router = express.Router();
 const sql = require('mysql');
 const path = require('path');
+const ejs = require('ejs');
+const fs = require('fs');
+const nodemailer = require('nodemailer');
 
 const multer = require('multer');
 const axios = require("axios");
+const juice = require("juice");
+const {htmlToText} = require("html-to-text");
 const storage = multer.memoryStorage()
 //define the type of upload multer would be doing and pass in its destination, in our case, its a single file with the name photo
 const upload = multer({storage: storage});
+let cards = [];
 
 // const pool = sql.createPool({
 //     connectionLimit: 1000000,
@@ -30,16 +36,129 @@ const pool = sql.createPool({
 });
 
 
+function sendNewsletter(customer_name, destination, cards){
+    const templatePath = `views/giftcard-newsletter.html`;
+    const templateVars = {
+        customer_name,
+        cards
+    };
+    const template = fs.readFileSync(templatePath, "utf-8");
+    const html = ejs.render(template, templateVars);
+    const text = htmlToText(html);
+    const htmlWithStylesInlined = juice(html);
+
+    sendMail(text, templateVars, htmlWithStylesInlined, destination, 'Anniekuku Accessories Newsletter Subscription');
+}
+
+function sendGiftCards(customer_name, destination, cards){
+    const templatePath = `views/giftcard-purchase.html`;
+    const templateVars = {
+        customer_name,
+        cards
+    };
+    const template = fs.readFileSync(templatePath, "utf-8");
+    const html = ejs.render(template, templateVars);
+    const text = htmlToText(html);
+    const htmlWithStylesInlined = juice(html);
+    sendMail(text, templateVars, htmlWithStylesInlined, destination, 'Anniekuku Accessories Gift Card');
+}
+
+function updateOrder(order){
+    const templatePath = `views/index.html`;
+    const templateVars = order;
+    const template = fs.readFileSync(templatePath, "utf-8");
+    const html = ejs.render(template, templateVars);
+    const text = htmlToText(html);
+    const htmlWithStylesInlined = juice(html);
+
+    sendMail(text, templateVars, htmlWithStylesInlined, order.customer_email, 'Your Order With Anniekuku Accessories');
+}
+
+
+function sendMail(text, templateVars, htmlWithStylesInlined, destination, subject){
+    // Step 1
+    let transporter = nodemailer.createTransport({
+        host: 'mail.anniekuku.com',
+        pool: true,
+        port: 465,
+        secure: true,
+        auth: {
+            user: 'sales@anniekuku.com',
+            pass: 'Allforanniekuku007$'
+        },
+        tls:{
+            rejectUnauthorized:false
+        }
+    });
+
+
+    // Step 3
+    let mailOptions = {
+        from: 'sales@anniekuku.com', // TODO: email sender
+        to: destination, // TODO: email receiver
+        subject: subject,
+        text: text,
+        templateVars: templateVars,
+        html: htmlWithStylesInlined // html body
+    };
+
+// Step 4
+    transporter.sendMail(mailOptions, (err, data) => {
+        if (err) {
+            sendMail(text, templateVars, htmlWithStylesInlined)
+        } else {
+            return console.log('Email sent!!!');
+        }
+    })
+}
+
+
+
 pool.getConnection(function (err, connection) {
     if (err){
-        // console.log({err})
+
 
     }else{
 
-        /* GET api listing. */
+
+    function generateNewsLetterGiftCard(body){
+        let createddate = new Date();
+        let code = `GFT-AK-${createddate.getTime()}`;
+        const giftCardGen = "INSERT INTO giftcards (code, amount_left, number_of_times_used, createddate) values (?, ?, ?, ?)"
+        connection.query(giftCardGen, [code, '10%', 0, createddate], (err, result) => {
+            if(err){
+                console.log({err})
+            }else{
+                cards = {gift_code: code, amount: '10%'}
+                sendNewsletter(body.customer_name, body.customer_email, cards);
+            }
+        });
+    }
+
+    function createGiftCardEntry(element, j, req){
+        let createddate = new Date();
+        let code = '';
+        code = createddate.getTime() + j;
+        code = `GFT-AK-${code}`;
+        const giftCardGen = "INSERT INTO giftcards (code, amount_left, number_of_times_used, createddate) values (?, ?, ?, ?)"
+        connection.query(giftCardGen, [code, element.item_price, 0, createddate], (err, result) => {
+            if(err){
+                console.log({err})
+            }else{
+                cards.push({gift_code: code, amount: element.item_price});
+                if(cards !== undefined && (cards.length === element.item_quantity)){
+                    sendGiftCards(req.body.customer_name, req.body.customer_email, cards);
+                    cards = [];
+                }
+            }
+        });
+    }
+
+    /* GET api listing. */
     router.get('/', (req, res) => {
         //// console.log(res.send);
-        const bito = {'api': 'izz working'}
+        const bito = {'api': 'izz working'};
+        updateOrder({order_id: 123, createddate: '12/03/12'});
         res.send(bito);
     });
 
@@ -153,6 +272,18 @@ pool.getConnection(function (err, connection) {
             }
         })
     });
+
+    router.get('/search/:string', (req, res) => {
+            const query = "SELECT * from products WHERE item_name Like ?; SELECT * from productcategories WHERE category_name Like ?;" ;
+            connection.query(query, [`%${req.params.string}%`, `%${req.params.string}%`], (err, result) => {
+                if (err) {
+                    res.send(err);
+                } else {
+                    res.send(result);
+
+                }
+            })
+        });
 
     router.get('/orders/customers/:id', (req, res) => {
         const query = "SELECT * from orderdetails where order_id = ?; SELECT * from orders where order_id = ?";
@@ -544,16 +675,16 @@ pool.getConnection(function (err, connection) {
     router.post('/orders/new', (req, res) => {
 
 
-        req.body.client_phone_number = '+234' + req.body.client_phone_number;
+        req.body.client_phone_number =  req.body.client_phone_number;
         const createddate = new Date();
         const string = createddate.toISOString()
 
         let hex = '';
+
         for (let i = 0; i < string.length; i++) {
             hex += '' + string.charCodeAt(i).toString(16);
-            code = hex;
+
             if (i === string.length - 1) {
-                //// console.log(hex);
                 const query = "INSERT INTO orders (order_id, number_of_items, delivery_fee, amount, client_name, date_due, status, delivery_address, client_phone_number , transaction_ref, createddate) values (?,?,?,?,?,?,?,?,?,?,?)";
                 connection.query(query, [hex ,req.body.number_of_items, req.body.delivery_fee ,req.body.amount ,req.body.customer_name, req.body.date_due, req.body.status , req.body.delivery_address , req.body.client_phone_number , req.body.transaction_ref , createddate], (err, order) => {
                     if (err) {
@@ -568,10 +699,9 @@ pool.getConnection(function (err, connection) {
                                 } else {
 
                                     if (element.id === "gift-001") {
-
-                                        const giftCardGen = "INSERT INTO giftcards (code, amount_left, number_of_times_used, createddate) values (?, ?, ?, ?)"
-                                        connection.query(giftCardGen, [code, element.item_price, 0, createddate]);
-
+                                        for( let j = 0 ; j < element.item_quantity; j++){
+                                           createGiftCardEntry(element, j, req);
+                                        }
                                     } else {
                                         const inventory = 'SELECT * from products where id=?';
                                         connection.query(inventory, [element.id], (err, result) => {
@@ -620,6 +750,16 @@ pool.getConnection(function (err, connection) {
                         })
 
 
+                        let order = {
+                            ...req.body,
+                            'order_id': hex,
+                            'createddate': createddate,
+                            sub_total: (req.body.amount - req.body.delivery_fee),
+                            order_status: 'is currently being prepared'
+                        }
+
+                        updateOrder(order)
+
                         const message = {
                             "message": "Success",
                             'order_details': hex
@@ -634,6 +774,34 @@ pool.getConnection(function (err, connection) {
 
 
     });
+
+    router.post('/newsletter', (req, res) => {
+        const customerCheck = 'Select * from customers where customer_phone_number = ? or customer_email = ?';
+        connection.query(customerCheck, [req.body.client_phone_number, req.body.customer_email], (err, result) => {
+            if (err) {
+                res.send(err)
+            } else if (result.length === 0) {
+                const customer = "INSERT INTO customers (customer_name, customer_email, customer_phone_number, source, number_of_orders) values (?,?,?,?,?)";
+                connection.query(customer, [req.body.customer_name,req.body.customer_email,req.body.client_phone_number, 'Newsletter' , 0], (err, result) => {
+                   if(!err){
+                       const message = {
+                           'message': 'success'
+                       }
+                       generateNewsLetterGiftCard(req.body);
+                       res.send(message);
+                   }else{
+                       res.send(err)
+                   }
+                });
+            } else {
+                const message = {
+                    status: 2,
+                    message: 'Sorry, You are not eligible for this offer'
+                }
+                res.send(message);
+            }
+        })
+    })
 
     router.post('/order/status/update', (req, res) => {
         const query = "UPDATE orders set status=? where id=?";
@@ -828,11 +996,11 @@ pool.getConnection(function (err, connection) {
     router.post('/merch/create-new', upload.array('images', 3), (req, res, err) => {
 
         const time = new Date();
-        const query = "INSERT INTO products (item_name, item_avatar, item_avatar2, item_avatar3, item_quantity, old_price, item_price, item_category, item_description ,quantity_sold ,createdby, createddate) values (?,?,?,?,?,?,?,?,?,?,?,?) ";
+        const query = "INSERT INTO products (item_name, item_avatar, item_avatar2, item_avatar3, item_quantity, old_price, item_price, item_category, item_description, item_design, item_color, item_metal, is_new_arrival, quantity_sold ,createdby, createddate) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
 
         switch (req.files.length) {
             case 1:
-                connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , null,  null,  req.body.item_quantity , 0,  req.body.item_price ,  req.body.item_category ,  req.body.item_description , '0' ,  req.body.createdby ,  time ],  (err, result) => {
+                connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , null,  null,  req.body.item_quantity , 0,  req.body.item_price ,  req.body.item_category ,  req.body.item_description, req.body.item_design, req.body.item_color, req.body.item_metal, req.body.is_new_arrival, '0' ,  req.body.createdby ,  time ],  (err, result) => {
                     if (err) {
                         res.send(err);
                     } else {
@@ -844,7 +1012,7 @@ pool.getConnection(function (err, connection) {
                 })
                 break;
             case 2:
-                connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , req.files[1].buffer.toString('base64')  , null  ,  req.body.item_quantity , 0,  req.body.item_price ,  req.body.item_category ,  req.body.item_description , '0' ,  req.body.createdby ,  time ],  (err, result) => {
+                connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , req.files[1].buffer.toString('base64')  , null  ,  req.body.item_quantity , 0,  req.body.item_price ,  req.body.item_category ,  req.body.item_description, req.body.item_design, req.body.item_color, req.body.item_metal, req.body.is_new_arrival, '0' ,  req.body.createdby ,  time ],  (err, result) => {
                     if (err) {
                         res.send(err);
                     } else {
@@ -856,7 +1024,7 @@ pool.getConnection(function (err, connection) {
                 })
                 break;
             case 3:
-                connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , req.files[1].buffer.toString('base64')  , req.files[2].buffer.toString('base64')  ,  req.body.item_quantity , 0,  req.body.item_price ,  req.body.item_category ,  req.body.item_description , '0' ,  req.body.createdby ,  time ],  (err, result) => {
+                connection.query(query, [ req.body.item_name , req.files[0].buffer.toString('base64') , req.files[1].buffer.toString('base64')  , req.files[2].buffer.toString('base64')  ,  req.body.item_quantity , 0,  req.body.item_price ,  req.body.item_category ,  req.body.item_description, req.body.item_design, req.body.item_color, req.body.item_metal, req.body.is_new_arrival, '0' ,  req.body.createdby ,  time ],  (err, result) => {
                     if (err) {
                         res.send(err);
                     } else {
@@ -887,32 +1055,67 @@ pool.getConnection(function (err, connection) {
             }else{
                 let old_price = 0
                 if(result[0].item_price !== req.body.item_price){ old_price = result[0].item_price }
-                if(req.files.length > 3){
-                    const update_query = "Update products set item_name = ?, old_price = ? item_price = ?, item_category = ?, item_description = ?, item_avatar = ? , item_avatar2 = ?, item_avatar3 = ? where id = ?";
-                    connection.query(update_query, [req.body.item_name, old_price, req.body.item_price, req.body.item_category, req.body.item_description, req.files[0].buffer.toString('base64'), req.files[1].buffer.toString('base64'), req.files[2].buffer.toString('base64'), req.body.item_id], (err, result) => {
-                        if (err) {
-                            res.send(err);
-                        } else {
-                            const message = {
-                                "message": "Success"
-                            };
-                            res.send(message);
 
-                        }
-                    })
-                }else{
-                    const update_query = "Update products set item_name = ?, old_price = ?, item_price = ?, item_category = ?, item_description = ? where id = ?";
-                    connection.query(update_query, [req.body.item_name, old_price, req.body.item_price, req.body.item_category, req.body.item_description, req.body.item_id], (err, result) => {
-                        if (err) {
-                            res.send(err);
-                        } else {
-                            const message = {
-                                "message": "Success"
-                            };
-                            res.send(message);
+                let update_query = '';
 
-                        }
-                    })
+                switch (req.files.length){
+
+                    case 1:
+                        update_query = "Update products set item_name = ?, old_price = ?, item_price = ?, item_category = ?, item_description = ?, item_design = ?, item_metal = ?, item_color = ?, is_new_arrival = ?, item_avatar = ? , item_avatar2 = ?, item_avatar3 = ? where id = ?";
+                        connection.query(update_query, [req.body.item_name, old_price, req.body.item_price, req.body.item_category, req.body.item_description, req.body.item_design, req.body.item_color, req.body.item_metal, req.body.is_new_arrival, req.files[0].buffer.toString('base64'), null, null, req.body.item_id], (err, result) => {
+                            if (err) {
+                                res.send(err);
+                            } else {
+                                const message = {
+                                    "message": "Success"
+                                };
+                                res.send(message);
+
+                            }
+                        })
+                        break;
+                    case 2:
+                        update_query = "Update products set item_name = ?, old_price = ?, item_price = ?, item_category = ?, item_description = ?, item_design = ?, item_metal = ?, item_color = ?, is_new_arrival = ?, item_avatar = ? , item_avatar2 = ?, item_avatar3 = ? where id = ?";
+                        connection.query(update_query, [req.body.item_name, old_price, req.body.item_price, req.body.item_category, req.body.item_description, req.body.item_design, req.body.item_color, req.body.item_metal, req.body.is_new_arrival, req.files[0].buffer.toString('base64'), req.files[1].buffer.toString('base64'), null, req.body.item_id], (err, result) => {
+                            if (err) {
+                                res.send(err);
+                            } else {
+                                const message = {
+                                    "message": "Success"
+                                };
+                                res.send(message);
+
+                            }
+                        })
+                        break;
+                    case 3:
+                        update_query = "Update products set item_name = ?, old_price = ?, item_price = ?, item_category = ?, item_description = ?, item_design = ?, item_metal = ?, item_color = ?, is_new_arrival = ?, item_avatar = ? , item_avatar2 = ?, item_avatar3 = ? where id = ?";
+                        connection.query(update_query, [req.body.item_name, old_price, req.body.item_price, req.body.item_category, req.body.item_description, req.body.item_design, req.body.item_color, req.body.item_metal, req.body.is_new_arrival, req.files[0].buffer.toString('base64'), req.files[1].buffer.toString('base64'), req.files[2].buffer.toString('base64'), req.body.item_id], (err, result) => {
+                            if (err) {
+                                res.send(err);
+                            } else {
+                                const message = {
+                                    "message": "Success"
+                                };
+                                res.send(message);
+
+                            }
+                        })
+                        break;
+                    default:
+                        update_query = "Update products set item_name = ?, old_price = ?, item_price = ?, item_category = ?, item_description = ?, item_design = ?, item_metal = ?, item_color = ?, is_new_arrival = ?  where id = ?";
+                        connection.query(update_query, [req.body.item_name, old_price, req.body.item_price, req.body.item_category, req.body.item_description, req.body.item_design, req.body.item_color, req.body.item_metal, req.body.is_new_arrival, req.body.item_id], (err, result) => {
+                            if (err) {
+                                res.send(err);
+                            } else {
+                                const message = {
+                                    "message": "Success"
+                                };
+                                res.send(message);
+
+                            }
+                        })
+                        break;
                 }
 
             }
