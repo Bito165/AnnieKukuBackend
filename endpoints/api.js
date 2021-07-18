@@ -19,6 +19,7 @@ let cards = [];
 const pool = sql.createPool({
     connectionLimit: 1000000,
     host: '23.94.16.6',
+    port: '3306',
     user: 'anniekuk_db',
     password: 'Allfordb007$',
     database: 'anniekuk_anniekuku',
