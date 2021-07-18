@@ -12,14 +12,10 @@
 
         const pool = sql.createPool({
             connectionLimit: 1000000,
-            connectTimeout  : 600 * 60 * 1000,
-            acquireTimeout  : 600 * 60 * 1000,
-            timeout         : 600 * 60 * 1000,
-            host: '23.94.16.6',
-            port: '3306',
-            user: 'anniekuk_data',
-            password: 'bP($b548B!k8',
-            database: 'anniekuk_database',
+            host: '127.0.0.1',
+            user: 'root',
+            password: '',
+            database: 'anniekuku',
             multipleStatements: true
         });
 
