@@ -25,16 +25,24 @@ let cards = [];
 //     multipleStatements: true
 // });
 
-
 const pool = sql.createPool({
+    host: '23.94.16.6',
+    user: 'anniekuk_db',
+    password: 'Allfordb007$',
+    database: 'anniekuk_anniekuku',
     connectionLimit: 1000000,
-    host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
-    port: '3306',
-    user: 'cq7bslzg89bzf3rl',
-    password: 'v1kjmgf770pbvt4s',
-    database: 'wn9v9fnyzffqn302',
     multipleStatements: true
 });
+
+// const pool = sql.createPool({
+//     connectionLimit: 1000000,
+//     host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+//     port: '3306',
+//     user: 'cq7bslzg89bzf3rl',
+//     password: 'v1kjmgf770pbvt4s',
+//     database: 'wn9v9fnyzffqn302',
+//     multipleStatements: true
+// });
 
 
 function sendNewsletter(customer_name, destination, cards){

@@ -10,14 +10,24 @@
 
         const app = express();
 
+        // const pool = sql.createPool({
+        //     connectionLimit: 1000000,
+        //     host: '127.0.0.1',
+        //     user: 'root',
+        //     password: '',
+        //     database: 'anniekuku',
+        //     multipleStatements: true
+        // });
+
         const pool = sql.createPool({
+            host: '23.94.16.6',
+            user: 'anniekuk_db',
+            password: 'Allfordb007$',
+            database: 'anniekuk_anniekuku',
             connectionLimit: 1000000,
-            host: '127.0.0.1',
-            user: 'root',
-            password: '',
-            database: 'anniekuku',
             multipleStatements: true
         });
+
 
         // const pool = sql.createPool({
         //     connectionLimit: 1000000,
