@@ -25,14 +25,7 @@ let cards = [];
 //     multipleStatements: true
 // });
 
-const pool = sql.createPool({
-    host: '23.94.16.6',
-    user: 'anniekuk_db',
-    password: 'Allfordb007$',
-    database: 'anniekuk_anniekuku',
-    connectionLimit: 1000000,
-    multipleStatements: true
-});
+const pool = sql.createPool(process.env.DATABASE_URL);
 
 // const pool = sql.createPool({
 //     connectionLimit: 1000000,
