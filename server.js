@@ -10,16 +10,20 @@
 
         const app = express();
 
-        // const pool = sql.createPool({
-        //     connectionLimit: 1000000,
-        //     host: '127.0.0.1',
-        //     user: 'root',
-        //     password: '',
-        //     database: 'anniekuku',
-        //     multipleStatements: true
-        // });
+        const pool = sql.createPool({
+            connectionLimit: 1000000,
+            connectTimeout  : 60 * 60 * 1000,
+            acquireTimeout  : 60 * 60 * 1000,
+            timeout         : 60 * 60 * 1000,
+            host: 'anniekuku.com',
+            user: 'anniekuk_data',
+            password: 'Allforanniekuku007$',
+            database: 'anniekuk_database',
+            port: 3360,
+            multipleStatements: true
+        });
 
-        const pool = sql.createPool('mysql://anniekuk_data:Allforanniekuku007$@23.94.16.6:3360/anniekuk_database?sslrootcert=rds-combined-ca-bundle.pem&sslmode=require');
+        // const pool = sql.createPool('mysql://anniekuk_data:Allforanniekuku007$@23.94.16.6:3360/anniekuk_database?sslrootcert=rds-combined-ca-bundle.pem&sslmode=require');
 
 
         // const pool = sql.createPool({
