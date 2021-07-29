@@ -25,7 +25,7 @@ let cards = [];
 //     multipleStatements: true
 // });
 
-const pool = sql.createPool('mysql://anniekuk_db:Allforanniekuku007$@23.94.16.6:3360/anniekuk_anniekuku?sslrootcert=rds-combined-ca-bundle.pem&sslmode=require');
+const pool = sql.createPool('mysql://anniekuk_data:Allforanniekuku007$@23.94.16.6:3360/anniekuk_database?sslrootcert=rds-combined-ca-bundle.pem&sslmode=require');
 
 // const pool = sql.createPool({
 //     connectionLimit: 1000000,
