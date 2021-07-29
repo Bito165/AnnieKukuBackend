@@ -26,7 +26,7 @@ let cards = [];
 // });
 
 const pool = sql.createPool({
-    host: 'localhost',
+    host: '23.94.16.6',
     user: 'anniekuk_db',
     password: 'Allfordb007$',
     database: 'anniekuk_anniekuku',
