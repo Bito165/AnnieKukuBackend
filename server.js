@@ -36,6 +36,7 @@
         pool.getConnection((err, connection) => {
 
             if (err){
+                console.log(process.env.DATABASE_URL);
                 console.log({err})
             }else{
 
