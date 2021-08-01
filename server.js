@@ -12,9 +12,6 @@
 
         const pool = sql.createPool({
             connectionLimit: 1000000,
-            connectTimeout  : 60 * 60 * 1000,
-            acquireTimeout  : 60 * 60 * 1000,
-            timeout         : 60 * 60 * 1000,
             host: '23.94.16.6',
             user: 'anniekuk_data',
             password: 'Allforanniekuku007$',
