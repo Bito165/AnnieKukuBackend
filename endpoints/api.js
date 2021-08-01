@@ -34,7 +34,6 @@ const pool = sql.createPool({
     user: 'anniekuk_data',
     password: 'Allforanniekuku007$',
     database: 'anniekuk_database',
-    port: 3360,
     multipleStatements: true
 });
 
