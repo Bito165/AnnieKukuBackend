@@ -10,31 +10,40 @@
 
         const app = express();
 
-        const pool = sql.createPool({
-            connectionLimit: 1000000,
-            connectTimeout  : 60 * 60 * 1000,
-            acquireTimeout  : 60 * 60 * 1000,
-            timeout         : 60 * 60 * 1000,
-            host: '23.94.16.6',
-            user: 'anniekuk_data',
-            password: 'Allforanniekuku007$',
-            database: 'anniekuk_database',
-            port: 3360,
-            multipleStatements: true
-        });
+        // const pool = sql.createPool({
+        //     connectionLimit: 1000000,
+        //     host: '127.0.0.1',
+        //     user: 'root',
+        //     password: '',
+        //     database: 'anniekuku',
+        //     multipleStatements: true
+        // });
+
+        // const pool = sql.createPool({
+        //     connectionLimit: 1000000,
+        //     connectTimeout  : 60 * 60 * 1000,
+        //     acquireTimeout  : 60 * 60 * 1000,
+        //     timeout         : 60 * 60 * 1000,
+        //     host: '23.94.16.6',
+        //     user: 'anniekuk_data',
+        //     password: 'Allforanniekuku007$',
+        //     database: 'anniekuk_database',
+        //     port: 3360,
+        //     multipleStatements: true
+        // });
 
         // const pool = sql.createPool('mysql://anniekuk_data:Allforanniekuku007$@23.94.16.6:3360/anniekuk_database?sslrootcert=rds-combined-ca-bundle.pem&sslmode=require');
 
 
-        // const pool = sql.createPool({
-        //     connectionLimit: 1000000,
-        //     host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
-        //     port: '3306',
-        //     user: 'cq7bslzg89bzf3rl',
-        //     password: 'v1kjmgf770pbvt4s',
-        //     database: 'wn9v9fnyzffqn302',
-        //     multipleStatements: true
-        // });
+        const pool = sql.createPool({
+            connectionLimit: 1000000,
+            host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+            port: '3306',
+            user: 'cq7bslzg89bzf3rl',
+            password: 'v1kjmgf770pbvt4s',
+            database: 'wn9v9fnyzffqn302',
+            multipleStatements: true
+        });
 
 
         pool.getConnection((err, connection) => {
@@ -161,7 +170,7 @@
         /**
          * Get port from environment and store in Express.
          */
-        const port = process.env.PORT || '1011';
+        const port = '1011';
         app.set('port', port);
 
         /**

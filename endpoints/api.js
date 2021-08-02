@@ -25,30 +25,30 @@ let cards = [];
 //     multipleStatements: true
 // });
 
-const pool = sql.createPool({
-    connectionLimit: 1000000,
-    connectTimeout  : 60 * 60 * 1000,
-    acquireTimeout  : 60 * 60 * 1000,
-    timeout         : 60 * 60 * 1000,
-    host: '23.94.16.6',
-    user: 'anniekuk_data',
-    password: 'Allforanniekuku007$',
-    database: 'anniekuk_database',
-    port: 3360,
-    multipleStatements: true
-});
+// const pool = sql.createPool({
+//     connectionLimit: 1000000,
+//     connectTimeout  : 60 * 60 * 1000,
+//     acquireTimeout  : 60 * 60 * 1000,
+//     timeout         : 60 * 60 * 1000,
+//     host: '23.94.16.6',
+//     user: 'anniekuk_data',
+//     password: 'Allforanniekuku007$',
+//     database: 'anniekuk_database',
+//     port: 3360,
+//     multipleStatements: true
+// });
 
 // const pool = sql.createPool('mysql://anniekuk_data:Allforanniekuku007$@23.94.16.6:3360/anniekuk_database?sslrootcert=rds-combined-ca-bundle.pem&sslmode=require');
 
-// const pool = sql.createPool({
-//     connectionLimit: 1000000,
-//     host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
-//     port: '3306',
-//     user: 'cq7bslzg89bzf3rl',
-//     password: 'v1kjmgf770pbvt4s',
-//     database: 'wn9v9fnyzffqn302',
-//     multipleStatements: true
-// });
+const pool = sql.createPool({
+    connectionLimit: 1000000,
+    host: 'r6ze0q02l4me77k3.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+    port: '3306',
+    user: 'cq7bslzg89bzf3rl',
+    password: 'v1kjmgf770pbvt4s',
+    database: 'wn9v9fnyzffqn302',
+    multipleStatements: true
+});
 
 
 function sendNewsletter(customer_name, destination, cards){
@@ -130,6 +130,7 @@ function sendMail(text, templateVars, htmlWithStylesInlined, destination, subjec
 
 
 pool.getConnection(function (err, connection) {
+
     if (err){
 
 
@@ -173,7 +174,6 @@ pool.getConnection(function (err, connection) {
     router.get('/', (req, res) => {
         //// console.log(res.send);
         const bito = {'api': 'izz working'};
-        updateOrder({order_id: 123, createddate: '12/03/12'});
         res.send(bito);
     });
 
@@ -407,7 +407,7 @@ pool.getConnection(function (err, connection) {
     })
 
     router.get('/public/merch/all', (req, res) => {
-        const query = "SELECT * from products order by quantity_sold desc";
+        const query = "SELECT * from products where item_avatar IS NOT NULL order by quantity_sold desc ";
         connection.query(query, function (err, result) {
             if (err) {
                 res.send(err);
@@ -467,7 +467,7 @@ pool.getConnection(function (err, connection) {
     });
 
     router.get('/home', (req, res) => {
-        const query = "SELECT * from carousel; SELECT * from products order by quantity_sold desc LIMIT 6; SELECT * from products order by createddate desc LIMIT 6; SELECT * from products where old_price > item_price order by quantity_sold desc LIMIT 6"
+        const query = "SELECT * from carousel; SELECT * from products where item_avatar IS NOT NULL order by quantity_sold desc LIMIT 6; SELECT * from products where is_new_arrival = 'true' order by createddate desc LIMIT 6; SELECT * from products where old_price > item_price order by quantity_sold desc LIMIT 6"
         connection.query(query, (err, result) => {
             if (err) {
                 res.send(err);
@@ -479,7 +479,7 @@ pool.getConnection(function (err, connection) {
     });
 
     router.get('/shopnow', (req, res) => {
-        const query = "SELECT * from products; SELECT * from productcategories;"
+        const query = "SELECT * from products where item_avatar IS NOT NULL; SELECT * from productcategories;"
         connection.query(query, function (err, result) {
             if (err) {
                 res.send(err);
@@ -491,7 +491,7 @@ pool.getConnection(function (err, connection) {
     });
 
     router.get('/best-sellers', (req, res) => {
-        const query = "SELECT * from products order by quantity_sold desc;"
+        const query = "SELECT * from products where item_avatar IS NOT NULL order by quantity_sold desc;"
         connection.query(query, function (err, result) {
             if (err) {
                 res.send(err);
@@ -503,7 +503,7 @@ pool.getConnection(function (err, connection) {
     });
 
     router.get('/product/:category/:id', (req, res) => {
-        const query = "SELECT * from products where id = ?; SELECT * from products where item_category = ? order by quantity_sold desc LIMIT 6"
+        const query = "SELECT * from products where id = ?; SELECT * from products where item_category = ? and item_avatar IS NOT NULL order by quantity_sold desc LIMIT 6"
         connection.query(query, [req.params.id, req.params.category], function (err, result) {
             if (err) {
                 res.send(err);
@@ -515,7 +515,7 @@ pool.getConnection(function (err, connection) {
     });
 
     router.get('/product/:category', (req, res) => {
-        const query = "SELECT * from products where item_category = ? order by quantity_sold"
+        const query = "SELECT * from products where item_category = ? and item_avatar IS NOT NULL order by quantity_sold"
         connection.query(query, [req.params.category], function (err, result) {
             if (err) {
                 res.send(err);
@@ -1058,8 +1058,27 @@ pool.getConnection(function (err, connection) {
                 break;
         }
 
+    })
 
-
+    router.post('/merch/bulk', (req, res) => {
+        // req.body = JSON.parse(req.body);
+        for (let i = 0; i < req.body.length; i++){
+            const time = new Date();
+            const query = "INSERT INTO products (item_name, item_avatar, item_avatar2, item_avatar3, item_quantity, old_price, item_price, item_category, item_description, item_design, item_color, item_metal, is_new_arrival, quantity_sold ,createdby, createddate) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+            console.log(req.body[i].item_name);
+            connection.query(query, [ req.body[i].item_name , null , null,  null,  req.body[i].item_quantity , 0,  req.body[i].item_price ,  req.body[i].item_category ,  req.body[i].item_description, req.body[i].item_design, req.body[i].item_color, req.body[i].item_metal, req.body[i].is_new_arrival, '0' ,  req.body[i].createdby ,  time ],  (err, result) => {
+                if (err) {
+                    res.send(err);
+                } else {
+                    if(i == req.body.length - 1){
+                        const message = {
+                            "message": "Success"
+                        };
+                        res.send(message);
+                    }
+                }
+            })
+        }
     })
 
     router.post('/merch/edit', upload.array('images', 3), (req, res, err) => {
