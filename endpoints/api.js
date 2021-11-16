@@ -266,6 +266,27 @@ pool.getConnection( (err, connection) => {
         })
     });
 
+    router.get('/shiping/rates', (req, res) => {
+        const query = "SELECT * from shipingrates where area_code=? and type_code=?";
+        connection.query(query, [req.body.area_code, req.body.type_code], (err, result) => {
+            if (err) {
+                reconnect(connection); res.send(err)
+            } else {
+                res.send(result);
+            }
+        })
+    });
+
+    router.get('/exchange/rates', (req, res) => {
+        const query = "SELECT TOP 1 from exchangerate";
+        connection.query(query, [req.body.area_code, req.body.type_code], (err, result) => {
+            if (err) {
+                reconnect(connection); res.send(err)
+            } else {
+                res.send(result);
+            }
+        })
+    });
 
     router.get('/messages/', (req, res) => {
         const query = "SELECT * from messages";
@@ -923,6 +944,47 @@ pool.getConnection( (err, connection) => {
                 const message = {"message": "Success"};
                 res.send(message);
 
+            }
+        })
+    })
+
+    router.post('/shiping/create-new', upload.single('staff_avatar'), (req, res) => {
+        const date = new Date();
+        const query = "INSERT INTO shipingrates (type_code, area_code, amount, createddate) values ('" + req.body.type_code + "', '" + req.body.area_code + "', '" + req.body.amount + "', '" + date + "') ";
+        connection.query(query, (err, result) => {
+            if (err) {
+                reconnect(connection); res.send(err)
+            } else {
+                const message = {"message": "Success"};
+                res.send(message);
+            }
+        })
+    })
+
+    router.post('/shiping/update', (req, res) => {
+        const query = "UPDATE shipingrates set amount=? where type_code=? and area_code=?";
+        connection.query(query, [ req.body.amount, req.body.type_code, req.body.area_code], function (err, result) {
+            if (err) {
+                reconnect(connection); res.send(err)
+            } else {
+                const message = {
+                    "message": "Success"
+                };
+                res.send(message);
+
+            }
+        })
+    })
+
+    router.post('/exchangerate/create-new', upload.single('staff_avatar'), (req, res) => {
+        const date = new Date();
+        const query = "INSERT INTO exchangerate (exchange_rate, createddate) values ('" + req.body.exchange_rate + "', '" + date + "') ";
+        connection.query(query, (err, result) => {
+            if (err) {
+                reconnect(connection); res.send(err)
+            } else {
+                const message = {"message": "Success"};
+                res.send(message);
             }
         })
     })

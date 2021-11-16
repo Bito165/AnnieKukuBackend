@@ -3,7 +3,6 @@
         const path = require('path');
         const http = require('http');
         const sql = require('mysql');
-        const bodyParser = require('body-parser');
 
         // Get our API routes
         const api = require('./endpoints/api');
@@ -104,14 +103,22 @@
             if (err) throw err;
         });
 
+        connection.query('CREATE TABLE IF NOT EXISTS shipingrates (id INT AUTO_INCREMENT PRIMARY KEY, type_code VARCHAR(255), area_code VARCHAR(255), amount INT, createddate DATE)', function (err, result) {
+            if (err) throw err;
+        });
+        
+        connection.query('CREATE TABLE IF NOT EXISTS exchangerate (id INT AUTO_INCREMENT PRIMARY KEY, exchange_rate INT, createddate DATE)', function (err, result) {
+            if (err) throw err;
+        });
+
     }
 
 })
 
 
         // Parsers for POST data
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({extended: false}));
+        app.use(express.json());
+        app.use(express.urlencoded({extended: false}));
 
         // Point static path to dist
 
